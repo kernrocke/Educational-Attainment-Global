@@ -9,7 +9,7 @@ cls
 **  Analyst:		Kern Rocke
 **	Date Created:	04/07/2020
 **	Date Modified: 	04/07/2020
-**  Algorithm Task: Descriptives of Education Attainment by Country
+**  Algorithm Task: Trend in Education Attainment by Caribbean Country
 
 
 ** DO-FILE SET UP COMMANDS
