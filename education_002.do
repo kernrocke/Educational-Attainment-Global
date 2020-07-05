@@ -65,12 +65,20 @@ drop metric
 rename metric_1 metric
 order metric, before(unit)
 
-lowess mean year if metric == 1, gen(lowi_edu)nog
-lowess mean year if metric == 2, gen(lowi_pop)nog
+*lowess mean year if metric == 1, gen(lowi_edu)nog
+*lowess mean year if metric == 2, gen(lowi_pop)nog
 
-keep if metric == 1
+/*
+Note:
+Metric:
+1- Age Standardized Education Per Capita
+3- Population Weighted Education Per Capita
+
+*/
+keep if metric == 3
 
 *Use both male annd female --- Note: This can change for analysis for males and females (ensure age range is considered)
+*Note: 1-Male; 2-Female 3-Both(Male & Female)
 keep if sex_id == 3
 
 #delimit ;
@@ -113,9 +121,92 @@ keep if sex_id == 3
 		sub("Country", size(3))
 	
 		)
+		
+		name(Both)
+		
 		;
 		
 
 #delimit cr
 
 restore
+
+
+preserve
+
+
+encode metric, gen(metric_1)
+drop metric
+rename metric_1 metric
+order metric, before(unit)
+
+*lowess mean year if metric == 1, gen(lowi_edu)nog
+*lowess mean year if metric == 2, gen(lowi_pop)nog
+
+/*
+Note:
+Metric:
+1- Age Standardized Education Per Capita
+3- Population Weighted Education Per Capita
+
+*/
+keep if metric == 3
+
+*Use both male annd female --- Note: This can change for analysis for males and females (ensure age range is considered)
+*Note: 1-Male; 2-Female 3-Both(Male & Female)
+keep if sex_id == 3
+
+keep if country_name == "Barbados" | country_name =="Jamaica" | country_name =="Guyana" | country_name =="Trinidad and Tobago" | country_name == "Grenada"
+
+encode country_iso, gen(iso)
+drop if iso==.
+
+collapse (mean) mean lower upper, by( year country_name country_iso iso)
+drop lower upper iso country_name
+
+reshape wide mean , i(year) j(country_iso) string
+
+
+#delimit ;
+	graph twoway 
+		(area meanTTO meanJAM meanGUY meanBRB meanGRD year
+
+		,
+		color(red green gold blue)
+		ysize(6) xsize(10)
+		plotregion(c(gs16) ic(gs16) ilw(thin) lw(thin)) 
+		graphregion(color(gs16) ic(gs16) ilw(thin) lw(thin)) 
+		
+		name(area1)
+		
+		xlab(1970(5)2015,
+		labs(3) nogrid glc(gs12) angle(0))
+		xtitle("Year", size(3) margin(t=5))
+		xmtick(1970(1)2015)
+		
+		ylab(2(1)14, axis(1) labs(3) nogrid glc(gs12) angle(0) format(%9.1f))
+	    ytitle("Year of Education Attained", axis(1) size(3) margin(r=3)) 
+		ytick(2(0.5)12)
+		ymtick(2(0.5)12)
+		
+		title("Years of Educational Attainment in the Caribbean", size(5) c(gs0))
+		subtitle("Aged 25 years plus", size(3) c(gs0))
+		
+		legend(nobox size(2) fcolor(gs16) position(6) colf cols(6)
+		order(1 "Trinidad and Tobago" 2 "Jamaica" 3 "Guyana" 4 "Barbados" 5 "Grenada")
+		
+		region(fcolor(gs16) lw(vthin) margin(l=2 r=2 t=2 b=2)) 
+		sub("Country", size(3))
+		
+	
+		))
+		
+
+		
+		;
+		
+
+#delimit cr
+
+restore
+
